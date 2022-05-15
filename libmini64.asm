@@ -14,8 +14,10 @@ sys_%2:
     section .data
     section .text
 
-    gensys  1, write
-    gensys 34, pause
-    gensys 35, nanosleep
-    gensys 37, alarm
-    gensys 60, exit
+    gensys   1, write
+    gensys  14, rt_sigprocmask
+    gensys  34, pause
+    gensys  35, nanosleep
+    gensys  37, alarm
+    gensys  60, exit
+    gensys 127, rt_sigpending
