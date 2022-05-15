@@ -3,9 +3,9 @@ longjmp: perform the long jump by restoring a saved CPU state. In addition, rest
 signal and sigaction: setup the handler of a signal.
 sigprocmask: can be used to block/unblock signals, and get/set the current signal mask.
 sigpending: check if there is any pending signal.
-alarm: setup a timer for the current process.
+-- alarm: setup a timer for the current process.
 -- write: write to a file descriptor.
-pause: wait for signal
+-- pause: wait for signal
 sleep: sleep for a specified number of seconds
 -- exit: cause normal process termination
 -- strlen: calculate the length of the string, excluding the terminating null byte ('\0').
