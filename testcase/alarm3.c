@@ -1,4 +1,4 @@
-#include "../libmini.h"
+#include "libmini.h"
 
 void handler(int s) { /* do nothing */
 }
@@ -10,6 +10,7 @@ int main() {
     sigprocmask(SIG_BLOCK, &s, NULL);
     signal(SIGALRM, SIG_IGN);
     signal(SIGINT, handler);
+
     alarm(1);
     pause();
     if (sigpending(&s) < 0) perror("sigpending");

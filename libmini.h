@@ -16,17 +16,70 @@ typedef long long sigval_t;
 
 typedef long sigset_t;
 
+typedef sigset_t kernel_sigset_t;
+
 typedef int mode_t;
 typedef int uid_t;
 typedef int gid_t;
 typedef int pid_t;
+
+typedef void (*sighandler_t)(int);
+typedef void (*__sighandler_t)(int);
+typedef void (*__sigrestore_t)(void);
 
 struct timespec {
     time_t tv_sec;        /* seconds */
     long   tv_nsec;       /* nanoseconds */
 };
 
-typedef sigset_t kernel_sigset_t;
+typedef struct {
+    int      si_signo;     /* Signal number */
+    int      si_errno;     /* An errno value */
+    int      si_code;      /* Signal code */
+    int      si_trapno;    /* Trap number that caused
+                                hardware-generated signal
+                                (unused on most architectures) */
+    pid_t    si_pid;       /* Sending process ID */
+    uid_t    si_uid;       /* Real user ID of sending process */
+    int      si_status;    /* Exit value or signal */
+    clock_t  si_utime;     /* User time consumed */
+    clock_t  si_stime;     /* System time consumed */
+    sigval_t si_value;     /* Signal value */
+    int      si_int;       /* POSIX.1b signal */
+    void    *si_ptr;       /* POSIX.1b signal */
+    int      si_overrun;   /* Timer overrun count;
+                                POSIX.1b timers */
+    int      si_timerid;   /* Timer ID; POSIX.1b timers */
+    void    *si_addr;      /* Memory location which caused fault */
+    long     si_band;      /* Band event (was int in
+                                glibc 2.3.2 and earlier) */
+    int      si_fd;        /* File descriptor */
+    short    si_addr_lsb;  /* Least significant bit of address
+                                (since Linux 2.6.32) */
+    void    *si_lower;     /* Lower bound when address violation
+                                occurred (since Linux 3.19) */
+    void    *si_upper;     /* Upper bound when address violation
+                                occurred (since Linux 3.19) */
+    int      si_pkey;      /* Protection key on PTE that caused
+                                fault (since Linux 4.6) */
+    void    *si_call_addr; /* Address of system call instruction
+                                (since Linux 3.5) */
+    int      si_syscall;   /* Number of attempted system call
+                                (since Linux 3.5) */
+    unsigned int si_arch;  /* Architecture of attempted system call
+                                (since Linux 3.5) */
+}siginfo_t;
+
+struct sigaction {
+    __sighandler_t sa_handler;
+    unsigned int sa_flags;
+    __sigrestore_t sa_restorer;
+    sigset_t sa_mask;
+};
+
+struct k_sigaction {
+    struct sigaction sa;
+};
 
 // ------- constant --------
 #define SIGHUP      1
@@ -66,9 +119,23 @@ typedef sigset_t kernel_sigset_t;
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
 
-#define SIG_ERR     -1
-#define SIG_DFL      0
-#define SIG_IGN      1
+#define	SIG_ERR	 ((sighandler_t) -1)	/* Error return.  */
+#define	SIG_DFL	 ((sighandler_t)  0)	/* Default action.  */
+#define	SIG_IGN	 ((sighandler_t)  1)	/* Ignore signal.  */
+
+#define SA_NOCLDSTOP	0x00000001u
+#define SA_NOCLDWAIT	0x00000002u
+#define SA_SIGINFO	    0x00000004u
+#define SA_ONSTACK  	0x08000000u
+#define SA_RESTART	    0x10000000u
+#define SA_INTERRUPT    0x20000000u
+#define SA_NODEFER	    0x40000000u
+#define SA_RESETHAND	0x80000000u
+
+#define SA_NOMASK	SA_NODEFER
+#define SA_ONESHOT	SA_RESETHAND
+
+#define SA_RESTORER	0x04000000
 
 // ------- functions -------
 // syscall fuinction
@@ -76,8 +143,10 @@ unsigned int sys_alarm(unsigned int);
 void sys_exit(int);
 int sys_nanosleep(const struct timespec *, struct timespec *);
 int sys_pause(void);
+int sys_rt_sigaction(int, const struct k_sigaction *, struct k_sigaction *, size_t);
 int sys_rt_sigprocmask(int, const kernel_sigset_t *, kernel_sigset_t *, size_t);
 int sys_rt_sigpending(kernel_sigset_t *, size_t);
+void sys_rt_sigreturn();
 unsigned int sys_sleep(unsigned int);
 ssize_t sys_write(int fd, const void *, size_t);
 
@@ -86,10 +155,14 @@ unsigned int alarm(unsigned int seconds);
 void exit(int status);
 int nanosleep(const struct timespec *req, struct timespec *rem);
 int pause(void);
+long sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
 int sigpending(sigset_t *set);
 unsigned int sleep(unsigned int seconds);
 ssize_t write(int fd, const void *buf, size_t count);
+
+// signal
+sighandler_t signal(int signum, sighandler_t handler);
 
 // signal set handler
 int sigemptyset(sigset_t *set);

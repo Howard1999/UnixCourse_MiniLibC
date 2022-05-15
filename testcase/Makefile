@@ -1,4 +1,4 @@
-all: start.o writ1.exe alarm1.exe alarm2.exe alarm3.exe jmp1.c
+all: start.o write1.exe alarm1.exe alarm2.exe alarm3.exe
 
 start.o: start.asm
 	yasm -f elf64 -DYASM -D__x86_64__ -DPIC start.asm -o start.o
