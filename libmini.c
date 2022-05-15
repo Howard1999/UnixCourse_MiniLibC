@@ -33,7 +33,7 @@ long sigaction(int signum, const struct sigaction *act, struct sigaction *oldact
     new.sa.sa_restorer = sys_rt_sigreturn;
     new.sa.sa_mask = act->sa_mask;
 
-    long ret = sys_rt_sigaction(signum, &new, &old, sizeof(long));
+    long ret = sys_rt_sigaction(signum, &new, &old, sizeof(sigset_t));
 
     oldact->sa_handler = old.sa.sa_handler;
     oldact->sa_flags = old.sa.sa_flags;
@@ -44,12 +44,12 @@ long sigaction(int signum, const struct sigaction *act, struct sigaction *oldact
 }
 
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
-    int ret = sys_rt_sigprocmask(how, set, oldset, sizeof(long));
+    int ret = sys_rt_sigprocmask(how, set, oldset, sizeof(sigset_t));
     WRAPPER_RETval(int);
 }
 
 int sigpending(sigset_t *set){
-    int ret = sys_rt_sigpending(set, sizeof(long));
+    int ret = sys_rt_sigpending(set, sizeof(sigset_t));
     WRAPPER_RETval(int);
 }
 
