@@ -20,9 +20,25 @@ proc_t funs[] = { a, b, c, d, e, f, g, h, i, j };
 
 int main() {
 	volatile int i = 0;
+
+	sigset_t st, st2;
+	sigemptyset(&st);
+	sigaddset(&st, SIGALRM);
+	sigprocmask(SIG_BLOCK, &st, NULL);
+	perror("sigprocmask");
+
 	if(setjmp(jb) != 0) {
+		sigprocmask(SIG_BLOCK, NULL, &st2);
+		if(!sigismember(&st2, SIGALRM)){
+			perror("signal mask not recover");
+		}
 		i++;
 	}
+
+	if(sigprocmask(SIG_UNBLOCK, &st, NULL)){
+		perror("sigprocmask");
+	}
+
 	if(i < 10) funs[i]();
 	return 0;
 }

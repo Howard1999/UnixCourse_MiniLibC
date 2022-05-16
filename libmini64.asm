@@ -43,7 +43,20 @@ setjmp:
     mov     QWORD [rdi+48], r15
     ; save return address
     mov     rax, [rsp]          ; load return address to rax
-    mov     QWORD [rdi+56], rax ; save into env->reg[7]
+    mov     QWORD [rdi+56], rax ; save into env[0].reg[7]
+    ; save signal mask
+    push    rdi                 ; backup rdi
+    push    rax                 ; allocate 8 byte in stack
+
+    mov     rdi, 0              ; sys_rt_sigprocmask(SIG_BLOCK, NULL, rsp, 8)
+    mov     rsi, 0              ;
+    mov     rdx, rsp            ;
+    mov     rcx, 8              ;
+    call    sys_rt_sigprocmask  ;
+
+    pop     rax                 ; release allocated stack
+    pop     rdi                 ; recover rdi
+    mov     QWORD [rdi+64], rax ; put sigmask to env[0].mask
     ; return = 0
     mov     rax, 0 
 
@@ -65,6 +78,13 @@ longjmp:
     ; load return address
     mov     rax, QWORD [rdi+56] ; load saved return address to rax
     mov     [rsp], rax          ; setup return address
+    ; recover sigmask
+    mov     rsi, rdi            ; rsi(second pram) = &env[0].mask
+    add     rsi, 64             ; 
+    mov     rdi, 2              ; sys_rt_sigprocmask(SIG_SETMASK, &env[0].mask, NULL, 8)
+    mov     rdx, 0              ;
+    mov     rcx, 8              ;
+    call    sys_rt_sigprocmask  ; 
     ; return = val
     mov     rax, rsi
     

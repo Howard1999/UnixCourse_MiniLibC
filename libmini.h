@@ -4,7 +4,6 @@
 // -------- symbol ---------
 #define NULL ((void*)0)
 extern long errno;
-#define _SIGSET_NWORDS (1024 / (8 * sizeof (unsigned long int)))
 
 // --------- type ----------
 typedef long long size_t;
