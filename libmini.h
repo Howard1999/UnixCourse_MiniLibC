@@ -43,6 +43,11 @@ struct k_sigaction {
     struct sigaction sa;
 };
 
+typedef struct jmp_buf_s {
+	long long reg[8];
+	sigset_t mask;
+} jmp_buf[1];
+
 // ------- constant --------
 #define SIGHUP      1
 #define SIGINT      2
@@ -132,6 +137,10 @@ int sigfillset(sigset_t *set);
 int sigaddset(sigset_t *set, int signum);
 int sigdelset(sigset_t *set, int signum);
 int sigismember(const sigset_t *set, int signum);
+
+// jmp
+int setjmp(jmp_buf env);
+void longjmp(jmp_buf env, int val);
 
 // string function
 size_t strlen(const char *s);
